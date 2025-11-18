@@ -20,6 +20,8 @@
 null :=
 space := $(null) $(null)
 WEBOTS_HOME_PATH?=$(subst $(space),\ ,$(strip $(subst \,/,$(WEBOTS_HOME))))
+LIBRARY_SOURCES_PATH = ./src
+C_SOURCES = $(wildcard $(LIBRARY_SOURCES_PATH)/*.c)
 PROJECT_ROOT = ../..
 YOUBOT_LIB_PATH = $(PROJECT_ROOT)/libraries/youbot_control
 INCLUDE = -I"$(YOUBOT_LIB_PATH)/include"

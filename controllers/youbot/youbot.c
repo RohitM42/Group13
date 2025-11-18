@@ -48,49 +48,6 @@ static void passive_wait(double sec) {
   } while (start_time + sec > wb_robot_get_time());
 }
 
-static void automatic_behavior() {
-  passive_wait(2.0);
-  gripper_release();
-  arm_set_height(ARM_FRONT_CARDBOARD_BOX);
-  passive_wait(4.0);
-  gripper_grip();
-  passive_wait(1.0);
-  arm_set_height(ARM_BACK_PLATE_LOW);
-  passive_wait(3.0);
-  gripper_release();
-  passive_wait(1.0);
-  arm_reset();
-  base_strafe_left();
-  passive_wait(5.0);
-  gripper_grip();
-  base_reset();
-  passive_wait(1.0);
-  base_turn_left();
-  passive_wait(1.0);
-  base_reset();
-  gripper_release();
-  arm_set_height(ARM_BACK_PLATE_LOW);
-  passive_wait(3.0);
-  gripper_grip();
-  passive_wait(1.0);
-  arm_set_height(ARM_RESET);
-  passive_wait(2.0);
-  arm_set_height(ARM_FRONT_PLATE);
-  arm_set_orientation(ARM_RIGHT);
-  passive_wait(4.0);
-  arm_set_height(ARM_FRONT_FLOOR);
-  passive_wait(2.0);
-  gripper_release();
-  passive_wait(1.0);
-  arm_set_height(ARM_FRONT_PLATE);
-  passive_wait(2.0);
-  arm_set_height(ARM_RESET);
-  passive_wait(2.0);
-  arm_reset();
-  gripper_grip();
-  passive_wait(2.0);
-}
-
 static void display_helper_message() {
   printf("\n \nControl commands:\n");
   printf(" Arrows:         Move the robot\n");
@@ -108,9 +65,6 @@ int main(int argc, char **argv) {
   gripper_init();
   passive_wait(2.0);
 
-  if (argc > 1 && strcmp(argv[1], "demo") == 0)
-    automatic_behavior();
-
   display_helper_message();
 
   int pc = 0;
@@ -118,6 +72,7 @@ int main(int argc, char **argv) {
 
   while (true) {
     step();
+    gripper_step();
 
     int c = wb_keyboard_get_key();
     if ((c >= 0) && c != pc) {
