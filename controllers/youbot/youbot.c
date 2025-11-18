@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
           base_reset();
           arm_reset();
           break;
-        case '+':
+        case '=':
         case 388:
         case 65585:
           printf("Grip\n");

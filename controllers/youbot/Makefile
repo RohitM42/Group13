@@ -20,9 +20,10 @@
 null :=
 space := $(null) $(null)
 WEBOTS_HOME_PATH?=$(subst $(space),\ ,$(strip $(subst \,/,$(WEBOTS_HOME))))
-RESOURCES_PATH = $(WEBOTS_HOME)/projects/robots/kuka/youbot
-INCLUDE = -I"$(RESOURCES_PATH)/libraries/youbot_control/include"
-LIBRARIES = -L"$(RESOURCES_PATH)/libraries/youbot_control" -lyoubot_control
+PROJECT_ROOT = ../..
+YOUBOT_LIB_PATH = $(PROJECT_ROOT)/libraries/youbot_control
+INCLUDE = -I"$(YOUBOT_LIB_PATH)/include"
+LIBRARIES = -L"$(YOUBOT_LIB_PATH)" -lyoubot_control
 
 ### Do not modify: this includes Webots global Makefile.include
 include $(WEBOTS_HOME_PATH)/resources/Makefile.include

@@ -1,6 +1,8 @@
 # Webots controllers build folders (C/C++/etc.)
 controllers/**/build/
 controllers/**/cmake-build-*/
+libraries/**/build/
+libraries/**/cmake-build-*/
 
 # Python cache
 __pycache__/
