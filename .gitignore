@@ -1,0 +1,28 @@
+# Webots controllers build folders (C/C++/etc.)
+controllers/**/build/
+controllers/**/cmake-build-*/
+libraries/**/build/
+libraries/**/cmake-build-*/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Generic build artefacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE stuff (VSCode, CLion, etc.)
+.vscode/
+.idea/
+*.user
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
