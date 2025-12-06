@@ -109,4 +109,5 @@ Youbot {
   controllerArgs [
     "demo"
   ]
+  window "youbot_window"
 }

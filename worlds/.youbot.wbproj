@@ -5,6 +5,5 @@ sceneTreePerspectives: 000000ff000000010000000300000022000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
-textFiles: 3 "controllers/youbot/youbot.c" "libraries/youbot_control/src/gripper.c" "protos/Youbot.proto" "protos/CardboardBox.proto" "protos/ConveyorBelt.proto"
-robotWindow: conveyor belt
+textFiles: 0 "controllers/youbot/youbot.c" "libraries/youbot_control/src/gripper.c" "protos/Youbot.proto" "protos/CardboardBox.proto" "protos/ConveyorBelt.proto" "libraries/youbot_control/src/base.c" "libraries/youbot_control/include/base.h"
 consoles: Console:All:All
