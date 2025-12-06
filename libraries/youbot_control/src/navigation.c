@@ -23,11 +23,11 @@ enum {
 
 static const Waypoint waypoints[NUM_WAYPOINTS] = {
   //   x,      y,      yaw
-  { -2.0,  -2.0,  0.0 },   // WP_CONVEYOR
-  { -1.5,  -2.0,  0.0 },   // WP_INTERSECTION_1
-  { -1.0,  -1.0,  0.0 },   // WP_INTERSECTION_2
-  {  0.0,  -1.0,  1.57 },  // WP_PALLET_1
-  {  0.5,  -1.0,  1.57 },  // WP_PALLET_2
+  { -1.0,  -0.65,  1.57 },   // WP_CONVEYOR
+  { -1.0,  -1.0,  0.0 },   // WP_INTERSECTION_1
+  { -1.0,  -1.0,  3.14 },   // WP_INTERSECTION_2
+  {  -2.0,  -1.63,  -1.57 },  // WP_PALLET_1
+  {  0,  -1.63,  -1.57 },  // WP_PALLET_2
 };
 
 // Paths
@@ -36,14 +36,12 @@ static const Waypoint waypoints[NUM_WAYPOINTS] = {
 static const int path_conveyor_to_pallet1[] = {
   WP_CONVEYOR,
   WP_INTERSECTION_1,
-  WP_INTERSECTION_2,
   WP_PALLET_1
 };
 
 // From conveyor to pallet 2: C -> I1 -> I2 -> P2
 static const int path_conveyor_to_pallet2[] = {
   WP_CONVEYOR,
-  WP_INTERSECTION_1,
   WP_INTERSECTION_2,
   WP_PALLET_2
 };

@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 #define SPEED 4.0
-#define MAX_SPEED 0.3
+#define MAX_SPEED 0.5
 #define SPEED_INCREMENT 0.05
 #define DISTANCE_TOLERANCE 0.05
 #define ANGLE_TOLERANCE 0.05

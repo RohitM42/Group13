@@ -20,7 +20,8 @@
     }
     button {
       padding: 4px 10px;
-      margin-top: 8px;
+      margin-top: 4px;
+      margin-right: 4px;
     }
     #status {
       margin-top: 10px;
@@ -28,54 +29,71 @@
       color: #444;
       white-space: pre-line;
     }
+    fieldset {
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
   <h2>Youbot GOTO 1.0</h2>
 
-  <div class="row">
-    <label for="x">X:</label>
-    <input id="x" type="number" step="0.1" value="-1.0">
-  </div>
+  <!-- Manual GOTO -->
+  <fieldset>
+    <legend>Manual target</legend>
+    <div class="row">
+      <label for="x">X:</label>
+      <input id="x" type="number" step="0.1" value="-1.0">
+    </div>
 
-  <div class="row">
-    <label for="y">Y:</label>
-    <input id="y" type="number" step="0.1" value="-0.5">
-  </div>
+    <div class="row">
+      <label for="y">Y:</label>
+      <input id="y" type="number" step="0.1" value="-0.5">
+    </div>
 
-  <div class="row">
-    <label for="yaw">Yaw (deg):</label>
-    <input id="yaw" type="number" step="5" value="0">
-  </div>
+    <div class="row">
+      <label for="yaw">Yaw (deg):</label>
+      <input id="yaw" type="number" step="5" value="0">
+    </div>
 
-  <button id="go">Go</button>
+    <button id="go">Go</button>
+  </fieldset>
+
+  <!-- Navigation shortcuts -->
+  <fieldset>
+    <legend>Shortcuts</legend>
+    <button id="btnP1">Conveyor → Pallet 1</button>
+    <button id="btnP2">Conveyor → Pallet 2</button>
+  </fieldset>
 
   <div id="status">JS loading…</div>
 
-  <!-- IMPORTANT: this script is an ES module, like generic.js -->
   <script type="module">
     import RobotWindow from 'https://cyberbotics.com/wwi/R2025a/RobotWindow.js';
 
-    // Create robot window bound to the robot shown in ?name=youBot
     const robotWindow = new RobotWindow();
-    // Expose it globally just for debugging if you want to poke in console
-    window.robotWindow = robotWindow;
-
+    window.robotWindow = robotWindow; // for debugging
     robotWindow.setTitle('Youbot GOTO 1.0');
 
-    const xInput   = document.getElementById('x');
-    const yInput   = document.getElementById('y');
-    const yawInput = document.getElementById('yaw');
-    const goBtn    = document.getElementById('go');
-    const statusEl = document.getElementById('status');
+    const xInput    = document.getElementById('x');
+    const yInput    = document.getElementById('y');
+    const yawInput  = document.getElementById('yaw');
+    const goBtn     = document.getElementById('go');
+    const btnP1     = document.getElementById('btnP1');
+    const btnP2     = document.getElementById('btnP2');
+    const statusEl  = document.getElementById('status');
 
     function setStatus(text) {
       statusEl.textContent = text;
       console.log('[STATUS]', text);
     }
 
-    setStatus('JS loaded, RobotWindow created, waiting for click');
+    function sendMessage(msg) {
+      console.log('[WINDOW] sending:', msg);
+      robotWindow.send(msg);
+      setStatus(msg + '\n' + 'time=' + new Date().toLocaleTimeString());
+    }
 
+    // Manual GOTO button
     goBtn.addEventListener('click', () => {
       const x      = parseFloat(xInput.value);
       const y      = parseFloat(yInput.value);
@@ -88,25 +106,27 @@
 
       const yawRad = yawDeg * Math.PI / 180.0;
       const msg = `GOTO ${x} ${y} ${yawRad}`;
-
-      console.log('[WINDOW] GO CLICKED, msg =', msg);
-      setStatus(
-        'GO CLICKED!\n' +
-        'msg=' + msg + '\n' +
-        'time=' + new Date().toLocaleTimeString()
-      );
-
-      robotWindow.send(msg);
+      sendMessage(msg);
     });
 
-    // Optional: handle messages FROM controller, if you ever send any
+    // Shortcut: Conveyor -> Pallet 1
+    btnP1.addEventListener('click', () => {
+      sendMessage('NAV P1');
+    });
+
+    // Shortcut: Conveyor -> Pallet 2
+    btnP2.addEventListener('click', () => {
+      sendMessage('NAV P2');
+    });
+
+    // Optional: messages from controller (currently not used)
     robotWindow.receive = (message, robot) => {
       console.log('[WINDOW] From controller:', message, 'for robot:', robot);
-      setStatus(
-        'From controller: ' + message + '\n' +
-        'time=' + new Date().toLocaleTimeString()
-      );
+      setStatus('From controller: ' + message + '\n' +
+                'time=' + new Date().toLocaleTimeString());
     };
+
+    setStatus('JS loaded – ready');
   </script>
 </body>
 </html>
