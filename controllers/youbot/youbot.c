@@ -38,32 +38,6 @@ static void process_window_messages() {
   }
 }
 
-// int main(int argc, char **argv) {
-//   wb_robot_init();
-
-//   base_init();
-//   arm_init();
-//   gripper_init();
-//   base_goto_init();
-
-//   while (wb_robot_step(TIME_STEP) != -1) {
-//     // navigation web
-//     process_window_messages();
-//     step();
-
-//     // run until reached target
-//     if (!base_goto_reached())
-//       base_goto_run();
-//     else
-//       base_reset();  // stop wheels when we reached the target
-//   }
-
-//   base_reset();
-//   wb_robot_cleanup();
-//   return 0;
-// }
-
-// test
 int main(int argc, char **argv) {
   wb_robot_init();
 
@@ -71,21 +45,47 @@ int main(int argc, char **argv) {
   arm_init();
   gripper_init();
   base_goto_init();
-  nav_init();
-
-  nav_start_from_conveyor_to(PALLET_1);
 
   while (wb_robot_step(TIME_STEP) != -1) {
+    // navigation web
+    process_window_messages();
+    step();
 
+    // run until reached target
     if (!base_goto_reached())
       base_goto_run();
     else
-      base_reset();
-
-    nav_update();
+      base_reset();  // stop wheels when we reached the target
   }
 
   base_reset();
   wb_robot_cleanup();
   return 0;
 }
+
+// test
+// int main(int argc, char **argv) {
+//   wb_robot_init();
+
+//   base_init();
+//   arm_init();
+//   gripper_init();
+//   base_goto_init();
+//   nav_init();
+
+//   nav_start_from_conveyor_to(PALLET_1);
+
+//   while (wb_robot_step(TIME_STEP) != -1) {
+
+//     if (!base_goto_reached())
+//       base_goto_run();
+//     else
+//       base_reset();
+
+//     nav_update();
+//   }
+
+//   base_reset();
+//   wb_robot_cleanup();
+//   return 0;
+// }

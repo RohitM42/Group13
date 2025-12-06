@@ -40,11 +40,6 @@
 #define LX 0.228  // longitudinal distance from robot's COM to wheel [m].
 #define LY 0.158  // lateral distance from robot's COM to wheel [m].
 
-// stimulus coefficients
-#define K1 3.0
-#define K2 1.0
-#define K3 1.0
-
 typedef struct {
   Vector2 v_target;
   double alpha;
@@ -193,73 +188,93 @@ void base_goto_set_target(double x, double y, double alpha) {
   goto_data.reached = false;
 }
 
+// angle normalization helper (to remove possible errors)
+static double normalize_angle(double angle) {
+  return atan2(sin(angle), cos(angle));
+}
+
 // new run
 void base_goto_run() {
+  if (goto_data.reached)
+    return;
+
+  // If supervisor stuff is not available, we cannot run goto control
   if (!self_node || !translation_field || !rotation_field) {
-    fprintf(stderr, "base_goto_run: supervisor fields not available, goto disabled\n");
+    fprintf(stderr, "base_goto_run: supervisor fields not initialized, disabling goto\n");
     goto_data.reached = true;
+    base_reset();
     return;
   }
 
-  const double *pos = wb_supervisor_field_get_sf_vec3f(translation_field);
-  const double *rot = wb_supervisor_field_get_sf_rotation(rotation_field);
+  // get current robot pose(replaces gps/compass)
+  const double *t = wb_supervisor_field_get_sf_vec3f(translation_field);
+  const double *r = wb_supervisor_field_get_sf_rotation(rotation_field);
 
-  double x = pos[0];
-  double y = pos[1];
+  const double x = t[0];
+  const double y = t[1];
 
-  double yaw = rot[3];
+  double ax = r[0];
+  double ay = r[1];
+  double az = r[2];
+  double angle = r[3];
 
-  double dx = goto_data.v_target.u - x;
-  double dy = goto_data.v_target.v - y;
-  double distance = sqrt(dx * dx + dy * dy);
+  if (az < 0.0) {
+    az = -az;
+    angle = -angle;
+  }
+  double yaw = angle;
 
-  double front_x = cos(yaw);
-  double front_y = sin(yaw);
+  const double dx = goto_data.v_target.u - x;
+  const double dy = goto_data.v_target.v - y;
+  const double dist = sqrt(dx * dx + dy * dy);
 
-  double left_x  = -front_y;
-  double left_y  =  front_x;
+  double vx_r = 0.0;
+  double vy_r = 0.0;
+  double omega = 0.0;
 
-  double u  = front_x * dx + front_y * dy;   // forward error
-  double ell = left_x  * dx + left_y  * dy;  // left error
+  if (dist > DISTANCE_TOLERANCE) {
+    double v_mag = dist;
+    if (v_mag > MAX_SPEED)
+      v_mag = MAX_SPEED;
 
+    double vx_w = (dx / dist) * v_mag;
+    double vy_w = (dy / dist) * v_mag;
 
-  const double KP_POS = 0.8;  // position gain
+    double c = cos(yaw);
+    double s = sin(yaw);
+    vx_r =  c * vx_w + s * vy_w;
+    vy_r = -s * vx_w + c * vy_w;
 
-  double vx = KP_POS * u;     // forward speed
-  double vy = KP_POS * ell;   // strafe-left/right speed
-  double omega = 0.0;         // no rotation for now
+    omega = 0.0;
 
-  // limit translational speed
-  double v_norm = sqrt(vx * vx + vy * vy);
-  if (v_norm > MAX_SPEED) {
-    vx *= MAX_SPEED / v_norm;
-    vy *= MAX_SPEED / v_norm;
+    base_move(vx_r, vy_r, omega);
+    goto_data.reached = false;
+    return;
   }
 
-  // actually move the base
-  base_move(vx, vy, omega);
+  // Target orientation
+  double alpha = goto_data.alpha;
+  double angle_error = normalize_angle(alpha - yaw);
 
-  // dubug(remove later)
+  if (fabs(angle_error) > ANGLE_TOLERANCE) {
+    // rotate in place to correct
+    double k_omega = 1.0;
+    omega = k_omega * angle_error;
 
-  printf(
-    "[GOTO DEBUG]\n"
-    "  Current pos: (%.3f, %.3f), yaw=%.3f rad\n"
-    "  Target  pos: (%.3f, %.3f)\n"
-    "  Errors: dist=%.4f\n"
-    "  Robot-frame target: u=%.3f (forward), ell=%.3f (left)\n"
-    "  Commanded v: vx=%.3f, vy=%.3f\n"
-    "-------------------------------------------------------\n",
-    x, y, yaw,
-    goto_data.v_target.u, goto_data.v_target.v,
-    distance,
-    u, ell,
-    vx, vy
-  );
+    if (omega >  MAX_SPEED) omega =  MAX_SPEED;
+    if (omega < -MAX_SPEED) omega = -MAX_SPEED;
 
-  // stop condition
+    vx_r = 0.0;
+    vy_r = 0.0;
 
-  if (distance < DISTANCE_TOLERANCE)
-    goto_data.reached = true;
+    base_move(vx_r, vy_r, omega);
+    goto_data.reached = false;
+    return;
+  }
+
+  goto_data.reached = true;
+  // stop the robot when reached
+  base_move(0.0, 0.0, 0.0);
 }
 
 
