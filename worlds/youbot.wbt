@@ -81,6 +81,26 @@ WoodenBox {
   translation -0.48455 0.00121984 0.15
   rotation 0 0 1 -1.5707963267948966
 }
+Robot {
+  translation -2.01 0.4 0.3
+  rotation 0 0 1 -1.5708
+  children [
+    Camera {
+      fieldOfView 0.785398
+      width 1280
+      height 720
+      focus Focus {
+        focalDistance 0.4
+        focalLength 0.5
+        maxFocalDistance 1
+        minFocalDistance 0.1
+      }
+      name "camera"
+    }
+  ]
+  name "camera_robot"
+  controller "camera_controller"
+}
 Youbot {
   hidden position_0_0 384.1174873640131
   hidden position_0_1 -320.1347178313156

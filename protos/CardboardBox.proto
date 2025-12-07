@@ -16,6 +16,7 @@ PROTO CardboardBox [
   field SFFloat    mass        0.1                # Defines the mass of the cardboard box in kg. A value smaller or equal to 0 remove the physics of the cardboard box.
   field SFBool     locked      FALSE            # Is `Solid.locked`.
   field SFFloat    lidAngle    0                # Defines the opening of the cardboard box in radians. A value equal to 0 closes the box and uses a simple box for the bounding object, preventing it from containing objects.
+  field MFString   textureUrl  ["icons/chute_A.png"]
 ]
 {
   %<
@@ -75,8 +76,12 @@ PROTO CardboardBox [
         translation %<= -(size.x / 2 - 0.00025) >% 0 0
         children [
           Shape {
-            appearance Cardboard {
-              type "back"
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size 0.0005 %<= size.y - 0.0001 >% %<= size.z - 0.0001 >%
@@ -88,8 +93,12 @@ PROTO CardboardBox [
         translation %<= size.x / 2 - 0.00025 >% 0 0
         children [
           Shape {
-            appearance Cardboard {
-            type "front"
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size 0.0005 %<= size.y - 0.0001 >% %<= size.z - 0.0001 >%
@@ -101,8 +110,12 @@ PROTO CardboardBox [
         translation 0 %<= -(size.y / 2 - 0.00025) >% 0
         children [
           Shape {
-            appearance Cardboard {
-              type "right"
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size %<= size.x - 0.0001 >% 0.0005 %<= size.z - 0.0001 >%
@@ -113,9 +126,13 @@ PROTO CardboardBox [
       DEF LEFT Pose {
         translation 0 %<= size.y / 2 - 0.00025 >% 0
         children [
-          Shape {
-            appearance Cardboard {
-              type "left"
+          Shape{
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size %<= size.x - 0.0001 >% 0.0005 %<= size.z - 0.0001 >%
@@ -127,8 +144,12 @@ PROTO CardboardBox [
         translation 0 0 %<= -size.z / 2 + 0.00025 >%
         children [
           Shape {
-            appearance Cardboard {
-              type "bottom"
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size  %<= size.x - 0.0001 >% %<= size.y - 0.0001 >% 0.0005
@@ -147,8 +168,12 @@ PROTO CardboardBox [
         rotation 0 1 0 %<= -fields.lidAngle.value >%
         children [
           Shape {
-            appearance Cardboard {
-              type "top"
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url IS textureUrl
+              }
+              roughness 0.4
+              metalness 0.0
             }
             geometry Box {
               size %<= size.x - 0.0001 >% %<= size.y - 0.0001 >% 0.0005
