@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Youbot GOTO 1.0</title>
+  <title>Youbot 1.4</title>
   <style>
     body {
       font-family: sans-serif;
@@ -35,11 +35,10 @@
   </style>
 </head>
 <body>
-  <h2>Youbot GOTO 1.0</h2>
+  <h2>Youbot 1.4</h2>
 
-  <!-- Manual GOTO -->
   <fieldset>
-    <legend>Manual target</legend>
+    <legend>Avoid obstacles</legend>
     <div class="row">
       <label for="x">X:</label>
       <input id="x" type="number" step="0.1" value="-1.0">
@@ -55,14 +54,7 @@
       <input id="yaw" type="number" step="5" value="0">
     </div>
 
-    <button id="go">Go</button>
-  </fieldset>
-
-  <!-- Navigation shortcuts -->
-  <fieldset>
-    <legend>Shortcuts</legend>
-    <button id="btnP1">Conveyor → Pallet 1</button>
-    <button id="btnP2">Conveyor → Pallet 2</button>
+    <button id="go">Plan &amp; Go</button>
   </fieldset>
 
   <div id="status">JS loading…</div>
@@ -71,15 +63,13 @@
     import RobotWindow from 'https://cyberbotics.com/wwi/R2025a/RobotWindow.js';
 
     const robotWindow = new RobotWindow();
-    window.robotWindow = robotWindow; // for debugging
-    robotWindow.setTitle('Youbot GOTO 1.0');
+    window.robotWindow = robotWindow;
+    robotWindow.setTitle('Youbot 1.4');
 
     const xInput    = document.getElementById('x');
     const yInput    = document.getElementById('y');
     const yawInput  = document.getElementById('yaw');
     const goBtn     = document.getElementById('go');
-    const btnP1     = document.getElementById('btnP1');
-    const btnP2     = document.getElementById('btnP2');
     const statusEl  = document.getElementById('status');
 
     function setStatus(text) {
@@ -93,7 +83,6 @@
       setStatus(msg + '\n' + 'time=' + new Date().toLocaleTimeString());
     }
 
-    // Manual GOTO button
     goBtn.addEventListener('click', () => {
       const x      = parseFloat(xInput.value);
       const y      = parseFloat(yInput.value);
@@ -105,21 +94,10 @@
       }
 
       const yawRad = yawDeg * Math.PI / 180.0;
-      const msg = `GOTO ${x} ${y} ${yawRad}`;
+      const msg = `NAV_GOTO ${x} ${y} ${yawRad}`;
       sendMessage(msg);
     });
 
-    // Shortcut: Conveyor -> Pallet 1
-    btnP1.addEventListener('click', () => {
-      sendMessage('NAV P1');
-    });
-
-    // Shortcut: Conveyor -> Pallet 2
-    btnP2.addEventListener('click', () => {
-      sendMessage('NAV P2');
-    });
-
-    // Optional: messages from controller (currently not used)
     robotWindow.receive = (message, robot) => {
       console.log('[WINDOW] From controller:', message, 'for robot:', robot);
       setStatus('From controller: ' + message + '\n' +

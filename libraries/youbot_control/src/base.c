@@ -123,7 +123,7 @@ void base_move(double vx, double vy, double omega) {
   speeds[2] = 1 / WHEEL_RADIUS * (vx - vy + (LX + LY) * omega);
   speeds[3] = 1 / WHEEL_RADIUS * (vx + vy - (LX + LY) * omega);
   base_set_wheel_speeds_helper(speeds);
-  printf("Speeds: vx=%.2f[m/s] vy=%.2f[m/s] ω=%.2f[rad/s]\n", vx, vy, omega);
+  // printf("Speeds: vx=%.2f[m/s] vy=%.2f[m/s] ω=%.2f[rad/s]\n", vx, vy, omega);
 }
 
 void base_forwards_increment() {
@@ -254,22 +254,23 @@ void base_goto_run() {
 
   // Target orientation
   double alpha = goto_data.alpha;
-  double angle_error = normalize_angle(alpha - yaw);
+  if (!isnan(alpha)) {
+    double angle_error = normalize_angle(alpha - yaw);
 
-  if (fabs(angle_error) > ANGLE_TOLERANCE) {
-    // rotate in place to correct
-    double k_omega = 1.0;
-    omega = k_omega * angle_error;
+    if (fabs(angle_error) > ANGLE_TOLERANCE) {
+      double k_omega = 1.0;
+      omega = k_omega * angle_error;
 
-    if (omega >  MAX_SPEED) omega =  MAX_SPEED;
-    if (omega < -MAX_SPEED) omega = -MAX_SPEED;
+      if (omega >  MAX_SPEED) omega =  MAX_SPEED;
+      if (omega < -MAX_SPEED) omega = -MAX_SPEED;
 
-    vx_r = 0.0;
-    vy_r = 0.0;
+      vx_r = 0.0;
+      vy_r = 0.0;
 
-    base_move(vx_r, vy_r, omega);
-    goto_data.reached = false;
-    return;
+      base_move(vx_r, vy_r, omega);
+      goto_data.reached = false;
+      return;
+    }
   }
 
   goto_data.reached = true;

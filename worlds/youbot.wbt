@@ -5,9 +5,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/Floor.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
 EXTERNPROTO "../protos/Youbot.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/samples/contests/rockin/protos/RoCKInShelf.proto"
 EXTERNPROTO "../protos/CardboardBox.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/pallet/protos/WoodenPallet.proto"
+EXTERNPROTO "../protos/WoodenPallet.proto"
 EXTERNPROTO "../protos/ConveyorBelt.proto"
 
 WorldInfo {
@@ -44,8 +43,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.2734052673788949 -0.311201520108939 -0.9101665636856591 4.575043992872292
-  position -1.135714622147965 -2.47030123307194 1.8005303139432585
+  orientation 0.4359951326510167 -0.3977048943431826 -0.8073035744502188 4.354423141123084
+  position -1.1164451284669525 -10.011381521601113 11.92578850599356
   follow "youBot"
 }
 TexturedBackground {
@@ -55,56 +54,55 @@ TexturedBackgroundLight {
 Floor {
   size 100 100
 }
-ConveyorBelt {
-  hidden translation_1 4.863403888499818e-07 2.9281212765784987e-12 0.26996625364718924
-  hidden rotation_1 -0.011611319458471457 0.915087035869661 -0.40308918869613825 5.147033617234051e-08
-  hidden linearVelocity_1 1.3872558392260437e-14 8.767037309339391e-19 -4.547473508864641e-16
-  hidden angularVelocity_1 1.2900611495653223e-17 8.006940682652302e-16 2.71412504423014e-17
+DEF CONVEYOR ConveyorBelt {
+  hidden translation_1 -2.3689222761191786e-06 8.9454393390939e-06 0.26984587426228646
+  hidden rotation_1 0.01841178573952319 -0.34898964462555393 0.9369456943121152 1.059966007641233e-05
   translation -2.01 0 -0.13
+  name "CONVEYOR"
   size 2.35 0.35 0.36
 }
 CardboardBox {
-  hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
-  hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
-  translation -1.9770558499992958 -0.0024511889045675094 0.2949466320970132
-  rotation -0.5217427660502716 0.6032348037257662 0.6032348279469181 -2.1798123326141052
+  translation -0.8301220857111042 -1.707430371576396 0.06498038000299416
+  rotation -0.49038782842420725 0.6162466136756415 0.6162466136756412 -2.2297359637484133
   size 0.18 0.13 0.13
 }
-WoodenPallet {
-  translation -1.97 -2.46 0
+DEF PALLET_2 WoodenPallet {
+  translation -0.98 -2.46 0
+  name "PALLET_2"
 }
-RoCKInShelf {
-  translation -0.85 -2.4 0
-  rotation 0 0 1 -1.5707953071795862
+DEF PALLET_1 WoodenPallet {
+  translation -2.32 -2.46 0
+  name "PALLET_1"
 }
-WoodenBox {
+DEF BOX1 WoodenBox {
   translation -0.48455 0.00121984 0.15
   rotation 0 0 1 -1.5707963267948966
+  name "BOX1"
 }
-Youbot {
-  hidden position_0_0 384.1174873640131
-  hidden position_0_1 -320.1347178313156
-  hidden position_0_2 -581.4246215544697
-  hidden position_0_3 580.1481189797116
-  hidden position_1_0 2.653895121095855e-06
-  hidden rotation_2 0 0 1 2.6539131237143062e-06
-  hidden position_2_0 0.6780047224229282
-  hidden rotation_3 0 -1 0 0.6780047224229281
-  hidden position_3_0 0.6820021479823096
-  hidden rotation_4 0 -1 0 0.68200214798231
-  hidden position_4_0 1.7400000276301528
-  hidden rotation_5 0 -1 0 1.740000027630153
-  hidden position_5_0 6.053802035113707e-09
-  hidden position_6_0 0.10000000001364957
-  hidden position_6_1 0.09999999998647403
-  hidden translation_7 0 0.10000000001364957 0.09
-  hidden translation_8 0 -0.09999999998647403 0.09
-  hidden rotation_9 0 -1 0 5.440001681121289
-  hidden rotation_10 0 -0.9999999999999999 0 5.975452472336259
-  hidden rotation_11 0 -1 0 3.371573293947739
-  hidden rotation_12 0 0.9999999999999999 0 2.09507071918967
-  translation -1.0193337548747956 -0.6206351872785213 0.10193780165180205
-  rotation -0.0006104555481845933 0.0006067191886182288 0.9999996296178563 1.5083207920824986
+DEF ROBOT Youbot {
+  hidden position_0_0 292.1106336729633
+  hidden position_0_1 -251.57903648821747
+  hidden position_0_2 -537.071421658147
+  hidden position_0_3 504.12796759702377
+  hidden position_1_0 -2.1200042736849047e-10
+  hidden position_2_0 1.5700026164115461
+  hidden rotation_3 0 -1 0 1.570002616411546
+  hidden position_3_0 -2.635001475997276
+  hidden rotation_4 0 1 0 2.635001475997276
+  hidden position_4_0 1.7800004229699742
+  hidden rotation_5 0 -1 0 1.7800004229699744
+  hidden position_5_0 -9.635350503008909e-08
+  hidden rotation_6 0 0 -1 9.424321830774485e-08
+  hidden position_6_0 0.10000000001194193
+  hidden position_6_1 0.09999999997643619
+  hidden translation_7 0 0.10000000001194193 0.09
+  hidden translation_8 0 -0.09999999997643619 0.09
+  hidden rotation_9 0 1 0 3.0841095427022966
+  hidden rotation_10 0 -1 0 0.25162420103400895
+  hidden rotation_11 0 1 0 3.282514759297477
+  hidden rotation_12 0 1 0 1.4731430226568507
+  translation -2.114120067684711 -0.7974003229165468 0.10193777035543461
+  rotation -0.0007943523439946376 -2.070420206729841e-05 0.999999684287795 -3.1403675575184957
   controller "youbot"
   controllerArgs [
     "demo"
