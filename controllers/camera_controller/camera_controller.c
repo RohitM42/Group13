@@ -5,16 +5,50 @@
 
 #include <webots/robot.h>
 #include <webots/camera.h>
+#include <webots/supervisor.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include "quirc/quirc.h"
 
 #define TIME_STEP 32
 #define COOLDOWN 10000 //10 seconds
+#define RESPAWN_TIME 2000 //50 seconds
+
+bool infinite = true;
+
+#define SPAWN_X -2.9
+#define SPAWN_Y 0.0
+#define SPAWN_Z 0.3
+
+void respawn_box(){
+  if (!infinite){
+    return;
+  }
+
+  int choice = rand() % 2;
+  const char* box_name = (choice == 0) ? "box_A" : "box_B";
+
+  WbNodeRef box = wb_supervisor_node_get_from_def(box_name);
+  if (!box){
+    printf("Error: Could not find %s\n", box_name);
+    return;
+  }
+
+  WbFieldRef translation = wb_supervisor_node_get_field(box, "translation");
+  WbFieldRef rotation = wb_supervisor_node_get_field(box, "rotation");
+  const double new_pos[3] = {SPAWN_X, SPAWN_Y, SPAWN_Z};
+  const double new_rot[4] = {0, 1, 0, 0};
+  wb_supervisor_field_set_sf_vec3f(translation, new_pos);
+  wb_supervisor_field_set_sf_rotation(rotation, new_rot);
+  printf("respawned %s\n", box_name);
+}
 
 int main() {
   wb_robot_init();
+  srand(time(NULL));
 
   WbDeviceTag camera = wb_robot_get_device("camera");
   wb_camera_enable(camera, TIME_STEP);
@@ -28,6 +62,7 @@ int main() {
   printf("Camera controller started with QR code detection.\n");
 
   int cooldown_timer = 0;
+  int respawn_timer = RESPAWN_TIME;
   bool code_detected = false;
 
   while (wb_robot_step(TIME_STEP) != -1) {
@@ -35,6 +70,13 @@ int main() {
     if (cooldown_timer > 0) {
       cooldown_timer -= TIME_STEP;
       continue;
+    }
+
+    if (respawn_timer > 0) {
+      respawn_timer -= TIME_STEP;
+      if (respawn_timer <= 0) {
+        respawn_box();
+      }
     }
 
     const unsigned char *image = wb_camera_get_image(camera);
@@ -76,16 +118,19 @@ int main() {
           if (strcmp((char*)data.payload, "CHUTE_A") == 0) {
             printf("RED\n");
             cooldown_timer= COOLDOWN;
+            respawn_timer = RESPAWN_TIME;
             code_detected = true;
             break;
           } else if (strcmp((char*)data.payload, "CHUTE_B") == 0) {
             printf("BLUE\n");
             cooldown_timer= COOLDOWN;
+            respawn_timer = RESPAWN_TIME;
             code_detected = true;
             break;
           } else {
             printf("Unknown  %s\n", data.payload);
             cooldown_timer= COOLDOWN;
+            respawn_timer = RESPAWN_TIME;
             code_detected = true;
             break;
           }

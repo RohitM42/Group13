@@ -65,7 +65,7 @@ ConveyorBelt {
   translation -2.01 0 -0.13
   size 2.35 0.35 0.36
 }
-CardboardBox_A {
+DEF box_A CardboardBox_A {
   hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
   hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
   translation -2.309785576115725 -0.002451182469764509 0.2949379444733439
@@ -73,7 +73,7 @@ CardboardBox_A {
   name "box_A"
   size 0.13 0.13 0.13
 }
-CardboardBox_B {
+DEF box_B CardboardBox_B {
   hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
   hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
   translation -1.9 -2.4 0
@@ -126,6 +126,7 @@ WoodenBox {
   size 0.35 0.35 0.23
 }
 Robot {
+  supervisor TRUE
   translation -2.3 -0.3 0.3
   rotation 0 0 1 1.5708
   children [
