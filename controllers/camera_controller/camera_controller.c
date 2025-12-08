@@ -11,6 +11,7 @@
 #include "quirc/quirc.h"
 
 #define TIME_STEP 32
+#define COOLDOWN 10000 //10 seconds
 
 int main() {
   wb_robot_init();
@@ -26,10 +27,19 @@ int main() {
 
   printf("Camera controller started with QR code detection.\n");
 
+  int cooldown_timer = 0;
+  bool code_detected = false;
+
   while (wb_robot_step(TIME_STEP) != -1) {
+
+    if (cooldown_timer > 0) {
+      cooldown_timer -= TIME_STEP;
+      continue;
+    }
+
     const unsigned char *image = wb_camera_get_image(camera);
     
-    if (image) {
+    if (image && !code_detected) {
       int width = wb_camera_get_width(camera);
       int height = wb_camera_get_height(camera);
       
@@ -65,15 +75,28 @@ int main() {
           
           if (strcmp((char*)data.payload, "CHUTE_A") == 0) {
             printf("CHUTE A\n");
+            cooldown_timer= COOLDOWN;
+            code_detected = true;
+            break;
           } else if (strcmp((char*)data.payload, "CHUTE_B") == 0) {
             printf("CHUTE B\n");
+            cooldown_timer= COOLDOWN;
+            code_detected = true;
+            break;
           } else {
             printf("Unknown  %s\n", data.payload);
+            cooldown_timer= COOLDOWN;
+            code_detected = true;
+            break;
           }
         } else {
           printf("QR decode error: %s\n", quirc_strerror(err));
         }
       }
+    }
+    if (cooldown_timer <= 0 && code_detected) {
+      code_detected = false;
+      printf("Cooldown ended.\n");
     }
   }
 
