@@ -12,7 +12,7 @@
 #define RIGHT 1
 
 #define MIN_POS 0.0
-#define MAX_POS 0.1
+#define MAX_POS 0.09999 //0.1 causes issues errors like 0.1 > 0.1
 #define OFFSET_WHEN_LOCKED 0.021
 
 static WbDeviceTag fingers;

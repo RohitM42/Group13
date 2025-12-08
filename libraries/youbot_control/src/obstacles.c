@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define MAX_OBSTACLES 32
+#define MAX_OBSTACLES 64
 #define NAV_CLEARANCE 0.10  // extra 10 cm outside the inflated obstacle
 
 static ObstacleInfo g_obstacles[MAX_OBSTACLES];

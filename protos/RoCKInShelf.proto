@@ -14,6 +14,10 @@ PROTO RoCKInShelf [
 ]
 {
   Solid {
+    %<
+      // this is just to remove the error
+      const _unusedSize = fields.size.value;
+    >%
     translation IS translation
     rotation IS rotation
     children [
