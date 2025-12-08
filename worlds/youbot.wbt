@@ -6,7 +6,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
 EXTERNPROTO "../protos/Youbot.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/samples/contests/rockin/protos/RoCKInShelf.proto"
-EXTERNPROTO "../protos/CardboardBox.proto"
+EXTERNPROTO "../protos/CardboardBox_A.proto"
+EXTERNPROTO "../protos/CardboardBox_B.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/pallet/protos/WoodenPallet.proto"
 EXTERNPROTO "../protos/ConveyorBelt.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/solids/protos/SolidPipe.proto"
@@ -64,14 +65,42 @@ ConveyorBelt {
   translation -2.01 0 -0.13
   size 2.35 0.35 0.36
 }
-CardboardBox {
+CardboardBox_A {
   hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
   hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
   translation -2.309785576115725 -0.002451182469764509 0.2949379444733439
   rotation -0.5217427660502716 0.6032348037257662 0.6032348279469181 -2.1798123326141052
+  name "box_A"
+  size 0.13 0.13 0.13
+}
+CardboardBox_B {
+  hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
+  hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
+  translation -1.9 -2.4 0
+  rotation -0.5217427660502716 0.6032348037257662 0.6032348279469181 -2.1798123326141052
+  name "box_B"
   size 0.13 0.13 0.13
 }
 # Chute A
+SolidPipe {
+  translation -0.9 -2.4 0.18
+  rotation 0 0 1 0
+  name "chuteB"
+  height 0.3
+  radius 0.4
+  thickness 0.05
+  subdivision 24
+  accuracy 0.0001
+  contactMaterial "default"
+  appearance PBRAppearance {
+    baseColor 1 0.2 0.2
+    roughness 0.4
+    metalness 0.1
+  }
+  physics NULL
+  enableBoundingObject TRUE
+}
+# Chute B
 SolidPipe {
   translation -1.9 -2.4 0.18
   rotation 0 0 1 0
@@ -91,29 +120,10 @@ SolidPipe {
   enableBoundingObject TRUE
 }
 
-# Chute B
-SolidPipe {
-  translation -0.9 -2.4 0.18
-  rotation 0 0 1 0
-  name "chuteB"
-  height 0.3
-  radius 0.4
-  thickness 0.05
-  subdivision 24
-  accuracy 0.0001
-  contactMaterial "default"
-  appearance PBRAppearance {
-    baseColor 1 0.2 0.2
-    roughness 0.4
-    metalness 0.1
-  }
-  physics NULL
-  enableBoundingObject TRUE
-}
-
 WoodenBox {
-  translation -0.48455 0.00121984 0.15
+  translation -0.68 0.00121984 0.11
   rotation 0 0 1 -1.5707963267948966
+  size 0.35 0.35 0.23
 }
 Robot {
   translation -2.3 -0.3 0.3
