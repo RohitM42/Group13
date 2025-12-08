@@ -121,8 +121,9 @@ SolidPipe {
 }
 
 WoodenBox {
-  translation -0.48455 0.00121984 0.15
+  translation -0.68 0.00121984 0.11
   rotation 0 0 1 -1.5707963267948966
+  size 0.35 0.35 0.23
 }
 Robot {
   translation -2.3 -0.3 0.3
