@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Youbot 1.4</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 12px;
+    }
+    .row {
+      margin-bottom: 8px;
+    }
+    label {
+      display: inline-block;
+      width: 70px;
+    }
+    input {
+      width: 80px;
+    }
+    button {
+      padding: 4px 10px;
+      margin-top: 4px;
+      margin-right: 4px;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #444;
+      white-space: pre-line;
+    }
+    fieldset {
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Youbot 1.4</h2>
+
+  <fieldset>
+    <legend>Avoid obstacles</legend>
+    <div class="row">
+      <label for="x">X:</label>
+      <input id="x" type="number" step="0.1" value="-1.0">
+    </div>
+
+    <div class="row">
+      <label for="y">Y:</label>
+      <input id="y" type="number" step="0.1" value="-0.5">
+    </div>
+
+    <div class="row">
+      <label for="yaw">Yaw (deg):</label>
+      <input id="yaw" type="number" step="5" value="0">
+    </div>
+
+    <button id="go">Plan &amp; Go</button>
+  </fieldset>
+
+  <div id="status">JS loading…</div>
+
+  <script type="module">
+    import RobotWindow from 'https://cyberbotics.com/wwi/R2025a/RobotWindow.js';
+
+    const robotWindow = new RobotWindow();
+    window.robotWindow = robotWindow;
+    robotWindow.setTitle('Youbot 1.4');
+
+    const xInput    = document.getElementById('x');
+    const yInput    = document.getElementById('y');
+    const yawInput  = document.getElementById('yaw');
+    const goBtn     = document.getElementById('go');
+    const statusEl  = document.getElementById('status');
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+      console.log('[STATUS]', text);
+    }
+
+    function sendMessage(msg) {
+      console.log('[WINDOW] sending:', msg);
+      robotWindow.send(msg);
+      setStatus(msg + '\n' + 'time=' + new Date().toLocaleTimeString());
+    }
+
+    goBtn.addEventListener('click', () => {
+      const x      = parseFloat(xInput.value);
+      const y      = parseFloat(yInput.value);
+      const yawDeg = parseFloat(yawInput.value);
+
+      if (Number.isNaN(x) || Number.isNaN(y) || Number.isNaN(yawDeg)) {
+        setStatus('Invalid input');
+        return;
+      }
+
+      const yawRad = yawDeg * Math.PI / 180.0;
+      const msg = `NAV_GOTO ${x} ${y} ${yawRad}`;
+      sendMessage(msg);
+    });
+
+    robotWindow.receive = (message, robot) => {
+      console.log('[WINDOW] From controller:', message, 'for robot:', robot);
+      setStatus('From controller: ' + message + '\n' +
+                'time=' + new Date().toLocaleTimeString());
+    };
+
+    setStatus('JS loaded – ready');
+  </script>
+</body>
+</html>
