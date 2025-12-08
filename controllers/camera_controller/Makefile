@@ -1,4 +1,6 @@
-C_SOURCES = camera_controller.c
+C_SOURCES = camera_controller.c quirc/quirc.c quirc/decode.c quirc/identify.c quirc/version_db.c
+
+INCLUDE = -Iquirc
 
 null :=
 space := $(null) $(null)

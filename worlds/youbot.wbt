@@ -67,9 +67,9 @@ ConveyorBelt {
 CardboardBox {
   hidden linearVelocity_0 -2.3272481396368196e-10 -1.7362672621972408e-14 -1.4954580457651687e-15
   hidden angularVelocity_0 2.897247455503985e-13 4.213210443617458e-12 7.821510335315456e-18
-  translation -1.9770558499992958 -0.0024511889045675094 0.2949466320970132
+  translation -2.309785576115725 -0.002451182469764509 0.2949379444733439
   rotation -0.5217427660502716 0.6032348037257662 0.6032348279469181 -2.1798123326141052
-  size 0.18 0.13 0.13
+  size 0.13 0.13 0.13
 }
 # Chute A
 SolidPipe {
@@ -83,7 +83,7 @@ SolidPipe {
   accuracy 0.0001
   contactMaterial "default"
   appearance PBRAppearance {
-    baseColor 0.8 0.8 0.8
+    baseColor 0.2 0.4 1
     roughness 0.4
     metalness 0.1
   }
@@ -103,7 +103,7 @@ SolidPipe {
   accuracy 0.0001
   contactMaterial "default"
   appearance PBRAppearance {
-    baseColor 0.8 0.8 0.8
+    baseColor 1 0.2 0.2
     roughness 0.4
     metalness 0.1
   }
@@ -116,19 +116,16 @@ WoodenBox {
   rotation 0 0 1 -1.5707963267948966
 }
 Robot {
-  translation -2.01 0.4 0.3
-  rotation 0 0 1 -1.5708
+  translation -2.3 -0.3 0.3
+  rotation 0 0 1 1.5708
   children [
     Camera {
-      fieldOfView 0.785398
-      width 1280
-      height 720
-      focus Focus {
-        focalDistance 0.4
-        focalLength 0.5
-        maxFocalDistance 1
-        minFocalDistance 0.1
-      }
+      rotation 0 0 1 0
+      fieldOfView 1.57
+      width 1920
+      height 1080
+      far 2.0
+      near 0.05
       name "camera"
     }
   ]
