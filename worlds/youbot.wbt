@@ -83,7 +83,7 @@ SolidPipe {
   accuracy 0.0001
   contactMaterial "default"
   appearance PBRAppearance {
-    baseColor 0.8 0.8 0.8
+    baseColor 0.2 0.4 1
     roughness 0.4
     metalness 0.1
   }
@@ -103,7 +103,7 @@ SolidPipe {
   accuracy 0.0001
   contactMaterial "default"
   appearance PBRAppearance {
-    baseColor 0.8 0.8 0.8
+    baseColor 1 0.2 0.2
     roughness 0.4
     metalness 0.1
   }

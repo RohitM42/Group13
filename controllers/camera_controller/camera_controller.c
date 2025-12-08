@@ -74,12 +74,12 @@ int main() {
           printf("Decoded QR Code: %s\n", data.payload);
           
           if (strcmp((char*)data.payload, "CHUTE_A") == 0) {
-            printf("CHUTE A\n");
+            printf("RED\n");
             cooldown_timer= COOLDOWN;
             code_detected = true;
             break;
           } else if (strcmp((char*)data.payload, "CHUTE_B") == 0) {
-            printf("CHUTE B\n");
+            printf("BLUE\n");
             cooldown_timer= COOLDOWN;
             code_detected = true;
             break;
