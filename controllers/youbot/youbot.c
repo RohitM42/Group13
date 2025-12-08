@@ -1,8 +1,5 @@
 #include <webots/robot.h>
 
-// Webots Web Interface receive function (available to controllers)
-const char *wb_robot_wwi_receive_text(void);
-
 #include <arm.h>
 #include <base.h>
 #include <gripper.h>
@@ -13,6 +10,12 @@ const char *wb_robot_wwi_receive_text(void);
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// for when the camera sends messages
+// #include <webots/receiver.h>
+
+// Webots Web Interface receive function (available to controllers)
+const char *wb_robot_wwi_receive_text(void);
 
 #define TIME_STEP 32
 #define ROBOT_RADIUS 0.32
