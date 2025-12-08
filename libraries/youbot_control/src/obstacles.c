@@ -53,6 +53,79 @@ static bool read_position_and_size(WbNodeRef node, double *cx, double *cy,
   return true;
 }
 
+static double read_yaw(WbNodeRef node) {
+  WbFieldRef r_field = wb_supervisor_node_get_field(node, "rotation");
+  if (!r_field)
+    return 0.0;
+
+  const double *r = wb_supervisor_field_get_sf_rotation(r_field);
+  double ax = r[0];
+  double ay = r[1];
+  double az = r[2];
+  double angle = r[3];
+
+  if (az < 0.0) {
+    az = -az;
+    angle = -angle;
+  }
+  return angle;
+}
+
+static void fill_obstacle_info(ObstacleInfo *o,
+                               const char *name_or_type,
+                               double cx, double cy,
+                               double sx, double sy,
+                               double yaw,
+                               double robot_radius) {
+  double half_x = sx * 0.5;
+  double half_y = sy * 0.5;
+
+  double Rx  = half_x + robot_radius;
+  double Ry  = half_y + robot_radius;
+  double RxN = Rx + NAV_CLEARANCE;
+  double RyN = Ry + NAV_CLEARANCE;
+
+  memset(o, 0, sizeof(*o));
+  strncpy(o->def_name, name_or_type, sizeof(o->def_name) - 1);
+  o->def_name[sizeof(o->def_name) - 1] = '\0';
+
+  o->center_x = cx;
+  o->center_y = cy;
+  o->size_x   = sx;
+  o->size_y   = sy;
+
+  double c = cos(yaw);
+  double s = sin(yaw);
+
+  double dx_o[4] = { +Rx, +Rx, -Rx, -Rx };
+  double dy_o[4] = { +Ry, -Ry, +Ry, -Ry };
+
+  double dx_n[4] = { +RxN, +RxN, -RxN, -RxN };
+  double dy_n[4] = { +RyN, -RyN, +RyN, -RyN };
+
+  for (int i = 0; i < 4; ++i) {
+    double wx = cx + c * dx_o[i] - s * dy_o[i];
+    double wy = cy + s * dx_o[i] + c * dy_o[i];
+    o->obstacle_points[i].x = wx;
+    o->obstacle_points[i].y = wy;
+
+    double wxn = cx + c * dx_n[i] - s * dy_n[i];
+    double wyn = cy + s * dx_n[i] + c * dy_n[i];
+    o->nav_points[i].x = wxn;
+    o->nav_points[i].y = wyn;
+  }
+}
+
+int obstacles_get_count(void) {
+  return g_obstacle_count;
+}
+
+const ObstacleInfo *obstacles_get(int index) {
+  if (index < 0 || index >= g_obstacle_count)
+    return NULL;
+  return &g_obstacles[index];
+}
+
 int obstacles_register_rect_from_def(const char *def_name, double robot_radius) {
   if (!g_supervisor_ok) {
     fprintf(stderr, "[OBST] not supervisor, cannot register '%s'\n", def_name);
@@ -76,50 +149,16 @@ int obstacles_register_rect_from_def(const char *def_name, double robot_radius) 
     return -1;
   }
 
-  double half_x = sx * 0.5;
-  double half_y = sy * 0.5;
-
-  double Rx  = half_x + robot_radius;
-  double Ry  = half_y + robot_radius;
-  double RxN = Rx + NAV_CLEARANCE;
-  double RyN = Ry + NAV_CLEARANCE;
+  double yaw = read_yaw(node);
 
   ObstacleInfo *o = &g_obstacles[g_obstacle_count];
-
-  memset(o, 0, sizeof(*o));
-  strncpy(o->def_name, def_name, sizeof(o->def_name) - 1);
-  o->def_name[sizeof(o->def_name) - 1] = '\0';
-
-  o->center_x = cx;
-  o->center_y = cy;
-  o->size_x   = sx;
-  o->size_y   = sy;
-
-  // collision rectangle (inflated by robot radius)
-  o->obstacle_points[0].x = cx + Rx;
-  o->obstacle_points[0].y = cy + Ry;
-  o->obstacle_points[1].x = cx + Rx;
-  o->obstacle_points[1].y = cy - Ry;
-  o->obstacle_points[2].x = cx - Rx;
-  o->obstacle_points[2].y = cy + Ry;
-  o->obstacle_points[3].x = cx - Rx;
-  o->obstacle_points[3].y = cy - Ry;
-
-  // navigation rectangle (extra clearance)
-  o->nav_points[0].x = cx + RxN;
-  o->nav_points[0].y = cy + RyN;
-  o->nav_points[1].x = cx + RxN;
-  o->nav_points[1].y = cy - RyN;
-  o->nav_points[2].x = cx - RxN;
-  o->nav_points[2].y = cy + RyN;
-  o->nav_points[3].x = cx - RxN;
-  o->nav_points[3].y = cy - RyN;
+  fill_obstacle_info(o, def_name, cx, cy, sx, sy, yaw, robot_radius);
 
   int id = g_obstacle_count;
   g_obstacle_count++;
 
-  printf("[OBST] %s: center=(%.3f,%.3f) size=(%.3f,%.3f)\n",
-         def_name, cx, cy, sx, sy);
+  printf("[OBST] %s: center=(%.3f,%.3f) size=(%.3f,%.3f) yaw=%.3f\n",
+         def_name, cx, cy, sx, sy, yaw);
   printf("       obstacle rect points:\n");
   for (int i = 0; i < 4; ++i)
     printf("         o%d=(%.3f, %.3f)\n", i,
@@ -130,16 +169,6 @@ int obstacles_register_rect_from_def(const char *def_name, double robot_radius) 
            o->nav_points[i].x, o->nav_points[i].y);
 
   return id;
-}
-
-int obstacles_get_count(void) {
-  return g_obstacle_count;
-}
-
-const ObstacleInfo *obstacles_get(int index) {
-  if (index < 0 || index >= g_obstacle_count)
-    return NULL;
-  return &g_obstacles[index];
 }
 
 static int register_rect_for_node(WbNodeRef node,
@@ -156,48 +185,16 @@ static int register_rect_for_node(WbNodeRef node,
     return -1;
   }
 
-  double half_x = sx * 0.5;
-  double half_y = sy * 0.5;
-
-  double Rx  = half_x + robot_radius;
-  double Ry  = half_y + robot_radius;
-  double RxN = Rx + NAV_CLEARANCE;
-  double RyN = Ry + NAV_CLEARANCE;
+  double yaw = read_yaw(node);
 
   ObstacleInfo *o = &g_obstacles[g_obstacle_count];
-
-  memset(o, 0, sizeof(*o));
-  strncpy(o->def_name, name_or_type, sizeof(o->def_name) - 1);
-  o->def_name[sizeof(o->def_name) - 1] = '\0';
-
-  o->center_x = cx;
-  o->center_y = cy;
-  o->size_x   = sx;
-  o->size_y   = sy;
-
-  o->obstacle_points[0].x = cx + Rx;
-  o->obstacle_points[0].y = cy + Ry;
-  o->obstacle_points[1].x = cx + Rx;
-  o->obstacle_points[1].y = cy - Ry;
-  o->obstacle_points[2].x = cx - Rx;
-  o->obstacle_points[2].y = cy + Ry;
-  o->obstacle_points[3].x = cx - Rx;
-  o->obstacle_points[3].y = cy - Ry;
-
-  o->nav_points[0].x = cx + RxN;
-  o->nav_points[0].y = cy + RyN;
-  o->nav_points[1].x = cx + RxN;
-  o->nav_points[1].y = cy - RyN;
-  o->nav_points[2].x = cx - RxN;
-  o->nav_points[2].y = cy + RyN;
-  o->nav_points[3].x = cx - RxN;
-  o->nav_points[3].y = cy - RyN;
+  fill_obstacle_info(o, name_or_type, cx, cy, sx, sy, yaw, robot_radius);
 
   int id = g_obstacle_count;
   g_obstacle_count++;
 
-  printf("[OBST] %s (auto): center=(%.3f,%.3f) size=(%.3f,%.3f)\n",
-         name_or_type, cx, cy, sx, sy);
+  printf("[OBST] %s (auto): center=(%.3f,%.3f) size=(%.3f,%.3f) yaw=%.3f\n",
+         name_or_type, cx, cy, sx, sy, yaw);
   return id;
 }
 

@@ -15,7 +15,7 @@ const char *wb_robot_wwi_receive_text(void);
 #include <string.h>
 
 #define TIME_STEP 32
-#define ROBOT_RADIUS 0.35
+#define ROBOT_RADIUS 0.32
 
 static void process_window_messages() {
   const char *msg;
@@ -49,10 +49,11 @@ int main(int argc, char **argv) {
 
   obstacles_init();
 
-  // obstacles_register_rect_from_def("CONVEYOR",  ROBOT_RADIUS);
   // obstacles_register_rect_from_def("PALLET_1",  ROBOT_RADIUS);
   // obstacles_register_rect_from_def("PALLET_2",  ROBOT_RADIUS);
-  obstacles_register_rects_by_type("WoodenPallet", ROBOT_RADIUS);
+  obstacles_register_rect_from_def("CONVEYOR",  ROBOT_RADIUS);
+  obstacles_register_rects_by_type("RoCKInShelf", ROBOT_RADIUS);
+  obstacles_register_rects_by_type("WoodenPalletStack", ROBOT_RADIUS);
 
   while (wb_robot_step(TIME_STEP) != -1) {
     process_window_messages();
