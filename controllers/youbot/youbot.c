@@ -1,4 +1,5 @@
 #include <webots/robot.h>
+#include <webots/receiver.h>
 
 #include <arm.h>
 #include <base.h>
@@ -14,11 +15,28 @@
 // for when the camera sends messages
 // #include <webots/receiver.h>
 
+// temporary 
+// Destination for category CHUTE_A
+#define DEST_A_X   0.2
+#define DEST_A_Y    4.23
+#define DEST_A_YAW (0.0)  // facing chute
+
+// Destination for category CHUTE_B
+#define DEST_B_X   -1.91
+#define DEST_B_Y    4.91
+#define DEST_B_YAW (1.57)
+
+// Destination for conveyor
+#define DEST_C_X   -0.784
+#define DEST_C_Y    7.36
+#define DEST_C_YAW (1.57)
+
 // Webots Web Interface receive function (available to controllers)
 const char *wb_robot_wwi_receive_text(void);
 
 #define TIME_STEP 32
 #define ROBOT_RADIUS 0.32
+static char last_category[32] = "";
 
 static void process_window_messages() {
   const char *msg;
@@ -41,6 +59,35 @@ static void process_window_messages() {
   }
 }
 
+static void process_custom_data_message() {
+  const char *data = wb_robot_get_custom_data();
+  if (!data || !data[0])
+    return;
+
+  if (strcmp(data, last_category) == 0)
+    return;
+
+  strncpy(last_category, data, sizeof(last_category) - 1);
+  last_category[sizeof(last_category) - 1] = '\0';
+
+  printf("[MSG] customData from supervisor: '%s'\n", data);
+
+  if (nav_is_active()) {
+    printf("[MSG] Robot busy, ignoring '%s'\n", data);
+    return;
+  }
+
+  if (strcmp(data, "CHUTE_A") == 0) {
+    printf("[MSG] → navigate to DEST A\n");
+    nav_start_to(DEST_A_X, DEST_A_Y, DEST_A_YAW);
+  } else if (strcmp(data, "CHUTE_B") == 0) {
+    printf("[MSG] → navigate to DEST B\n");
+    nav_start_to(DEST_B_X, DEST_B_Y, DEST_B_YAW);
+  } else {
+    printf("[MSG] Unknown category '%s'\n", data);
+  }
+}
+
 int main(int argc, char **argv) {
   wb_robot_init();
 
@@ -60,6 +107,7 @@ int main(int argc, char **argv) {
 
   while (wb_robot_step(TIME_STEP) != -1) {
     process_window_messages();
+    process_custom_data_message();
 
     if (!base_goto_reached())
       base_goto_run();

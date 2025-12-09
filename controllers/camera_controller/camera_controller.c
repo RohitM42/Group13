@@ -17,12 +17,17 @@
 #define COOLDOWN 10000 //10 seconds
 #define RESPAWN_TIME 2000 //50 seconds
 
-bool infinite = true;
 
 // needs to be adjusted to the current environment
 #define SPAWN_X -2.9
 #define SPAWN_Y 0.0
 #define SPAWN_Z 0.3
+
+// for emitter to send messages to youbot controller
+static WbNodeRef youbot_node = NULL;
+static WbFieldRef youbot_custom_field = NULL;
+
+bool infinite = true;
 
 void respawn_box(){
   if (!infinite){
@@ -47,9 +52,28 @@ void respawn_box(){
   printf("respawned %s\n", box_name);
 }
 
+static void send_box_category(const char *category) {
+  if (!youbot_node || !youbot_custom_field)
+    return;
+
+  wb_supervisor_field_set_sf_string(youbot_custom_field, category);
+  printf("Camera: set youbot customData = '%s'\n", category);
+}
+
 int main() {
   wb_robot_init();
   srand(time(NULL));
+
+  youbot_node = wb_supervisor_node_get_from_def("ROBOT");
+  if (!youbot_node)
+    printf("Camera: WARNING: DEF ROBOT not found\n");
+  else {
+    youbot_custom_field = wb_supervisor_node_get_field(youbot_node, "customData");
+    if (!youbot_custom_field)
+      printf("Camera: WARNING: ROBOT has no customData field\n");
+    else // reset the value when the world reloads
+      wb_supervisor_field_set_sf_string(youbot_custom_field, "");
+  }
 
   WbDeviceTag camera = wb_robot_get_device("camera");
   wb_camera_enable(camera, TIME_STEP);
@@ -118,18 +142,21 @@ int main() {
           
           if (strcmp((char*)data.payload, "CHUTE_A") == 0) {
             printf("RED\n");
+            send_box_category("CHUTE_A");
             cooldown_timer= COOLDOWN;
             respawn_timer = RESPAWN_TIME;
             code_detected = true;
             break;
           } else if (strcmp((char*)data.payload, "CHUTE_B") == 0) {
             printf("BLUE\n");
+            send_box_category("CHUTE_B");
             cooldown_timer= COOLDOWN;
             respawn_timer = RESPAWN_TIME;
             code_detected = true;
             break;
           } else {
             printf("Unknown  %s\n", data.payload);
+            send_box_category((char*)data.payload);
             cooldown_timer= COOLDOWN;
             respawn_timer = RESPAWN_TIME;
             code_detected = true;
