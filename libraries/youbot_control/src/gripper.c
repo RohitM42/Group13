@@ -12,11 +12,11 @@
 #define RIGHT 1
 
 #define MIN_POS 0.0
-#define MAX_POS 0.1
+#define MAX_POS 0.09999 //0.1 causes issues errors like 0.1 > 0.1
 #define OFFSET_WHEN_LOCKED 0.021
 
 static WbDeviceTag fingers;
-static WbDeviceTag finger_sensor;  // <-- position sensor
+static WbDeviceTag finger_sensor;  // position sensor
 
 // Supervisor handle for the connector Transform scale (Robot field)
 static WbFieldRef connector_scale_field = NULL;
@@ -59,21 +59,18 @@ void gripper_init() {
     printf("WARNING: finger::leftsensor not found.\n");
   }
 
-  // get *this* robot node (must be Supervisor TRUE)
   WbNodeRef self = wb_supervisor_node_get_self();
   if (!self) {
     printf("WARNING: this controller is not running on a Supervisor robot.\n");
     return;
   }
 
-  // get the PROTO field that is wired to FINGER_CONNECTOR.scale
   connector_scale_field = wb_supervisor_node_get_field(self, "connectorScale");
   if (!connector_scale_field) {
     printf("WARNING: connectorScale field not found on robot.\n");
     return;
   }
 
-  // Initial scale based on current sensor reading (or MIN_POS as fallback)
   double init_pos = MIN_POS;
   if (finger_sensor)
     init_pos = wb_position_sensor_get_value(finger_sensor);
@@ -82,21 +79,17 @@ void gripper_init() {
 
 void gripper_grip() {
   wb_motor_set_position(fingers, MIN_POS);
-  // no direct scale change here; gripper_step() will update smoothly
 }
 
 void gripper_release() {
   wb_motor_set_position(fingers, MAX_POS);
-  // no direct scale change here; gripper_step() will update smoothly
 }
 
 void gripper_set_gap(double gap) {
   double v = bound(0.5 * (gap - OFFSET_WHEN_LOCKED), MIN_POS, MAX_POS);
   wb_motor_set_position(fingers, v);
-  // no direct scale change here; gripper_step() will update smoothly
 }
 
-// NEW: call this once per timestep from youbot.c
 void gripper_step(void) {
   if (!finger_sensor || !connector_scale_field)
     return;

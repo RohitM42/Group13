@@ -191,8 +191,8 @@ Robot {
                                         device [
                                           LinearMotor {
                                             name "finger::left"
-                                            maxPosition 0.1
-                                            maxForce 200
+                                            maxPosition 0.12
+                                            maxForce 300
                                           }
                                           PositionSensor {
                                             name "finger::leftsensor"
@@ -251,8 +251,8 @@ Robot {
                                         device [
                                           LinearMotor {
                                             name "finger::right"
-                                            maxPosition 0.1
-                                            maxForce 200
+                                            maxPosition 0.12
+                                            maxForce 300
                                           }
                                           PositionSensor {
                                             name "finger::rightsensor"

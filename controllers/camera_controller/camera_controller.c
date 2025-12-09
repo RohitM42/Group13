@@ -19,6 +19,7 @@
 
 bool infinite = true;
 
+// needs to be adjusted to the current environment
 #define SPAWN_X -2.9
 #define SPAWN_Y 0.0
 #define SPAWN_Z 0.3

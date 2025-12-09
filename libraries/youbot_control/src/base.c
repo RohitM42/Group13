@@ -22,8 +22,7 @@
 
 #include "tiny_math.h"
 
-#include <webots/compass.h>
-#include <webots/gps.h>
+#include <webots/supervisor.h>
 #include <webots/motor.h>
 #include <webots/robot.h>
 
@@ -31,20 +30,15 @@
 #include <stdio.h>
 
 #define SPEED 4.0
-#define MAX_SPEED 0.3
+#define MAX_SPEED 0.5
 #define SPEED_INCREMENT 0.05
-#define DISTANCE_TOLERANCE 0.001
-#define ANGLE_TOLERANCE 0.001
+#define DISTANCE_TOLERANCE 0.05
+#define ANGLE_TOLERANCE 0.05
 
 // robot geometry
 #define WHEEL_RADIUS 0.05
 #define LX 0.228  // longitudinal distance from robot's COM to wheel [m].
 #define LY 0.158  // lateral distance from robot's COM to wheel [m].
-
-// stimulus coefficients
-#define K1 3.0
-#define K2 1.0
-#define K3 1.0
 
 typedef struct {
   Vector2 v_target;
@@ -53,13 +47,16 @@ typedef struct {
 } goto_struct;
 
 static WbDeviceTag wheels[4];
-static WbDeviceTag gps;
-static WbDeviceTag compass;
 static goto_struct goto_data;
 
 static double robot_vx = 0.0;
 static double robot_vy = 0.0;
 static double robot_omega = 0.0;
+
+// supervisor nodes to replace gps and compass 
+static WbNodeRef self_node = NULL;
+static WbFieldRef translation_field = NULL;
+static WbFieldRef rotation_field = NULL;
 
 static void base_set_wheel_velocity(WbDeviceTag t, double velocity) {
   wb_motor_set_position(t, INFINITY);
@@ -126,7 +123,7 @@ void base_move(double vx, double vy, double omega) {
   speeds[2] = 1 / WHEEL_RADIUS * (vx - vy + (LX + LY) * omega);
   speeds[3] = 1 / WHEEL_RADIUS * (vx + vy - (LX + LY) * omega);
   base_set_wheel_speeds_helper(speeds);
-  printf("Speeds: vx=%.2f[m/s] vy=%.2f[m/s] ω=%.2f[rad/s]\n", vx, vy, omega);
+  // printf("Speeds: vx=%.2f[m/s] vy=%.2f[m/s] ω=%.2f[rad/s]\n", vx, vy, omega);
 }
 
 void base_forwards_increment() {
@@ -165,105 +162,122 @@ void base_strafe_right_increment() {
   base_move(robot_vx, robot_vy, robot_omega);
 }
 
-void base_goto_init(double time_step) {
-  gps = wb_robot_get_device("gps");
-  compass = wb_robot_get_device("compass");
-  if (gps)
-    wb_gps_enable(gps, time_step);
-  if (compass)
-    wb_compass_enable(compass, time_step);
-  if (!gps || !compass)
-    fprintf(stderr, "cannot use goto feature without GPS and Compass");
+// new goto init
+void base_goto_init() {
+  self_node = wb_supervisor_node_get_self();
+  if (!self_node) {
+    fprintf(stderr, "base_goto_init: this controller is not a supervisor, goto disabled\n");
+  } else {
+    translation_field = wb_supervisor_node_get_field(self_node, "translation");
+    rotation_field = wb_supervisor_node_get_field(self_node, "rotation");
+    if (!translation_field || !rotation_field)
+      fprintf(stderr, "base_goto_init: failed to get translation or rotation field\n");
+  }
 
   goto_data.v_target.u = 0.0;
   goto_data.v_target.v = 0.0;
   goto_data.alpha = 0.0;
-  goto_data.reached = false;
+  goto_data.reached = true;
 }
 
+// new set target
 void base_goto_set_target(double x, double y, double alpha) {
-  if (!gps || !compass)
-    fprintf(stderr, "base_goto_set_target: cannot use goto feature without GPS and Compass");
-
   goto_data.v_target.u = x;
   goto_data.v_target.v = y;
-  goto_data.alpha = alpha;
+  goto_data.alpha = alpha;    // rad
   goto_data.reached = false;
 }
 
-void base_goto_run() {
-  if (!gps || !compass)
-    fprintf(stderr, "base_goto_set_target: cannot use goto feature without GPS and Compass");
-
-  // get sensors
-  const double *gps_raw_values = wb_gps_get_values(gps);
-  const double *compass_raw_values = wb_compass_get_values(compass);
-
-  // compute 2d vectors
-  Vector2 v_gps = {gps_raw_values[0], gps_raw_values[1]};
-  Vector2 v_front = {compass_raw_values[0], compass_raw_values[1]};
-  Vector2 v_right = {-v_front.v, v_front.u};
-  Vector2 v_north = {1.0, 0.0};
-
-  // compute distance
-  Vector2 v_dir;
-  vector2_minus(&v_dir, &goto_data.v_target, &v_gps);
-  double distance = vector2_norm(&v_dir);
-
-  // compute absolute angle & delta with the delta with the target angle
-  double theta = vector2_angle(&v_front, &v_north);
-  double delta_angle = theta - goto_data.alpha;
-
-  // compute the direction vector relatively to the robot coordinates
-  // using an a matrix of homogenous coordinates
-  Matrix33 transform;
-  matrix33_set_identity(&transform);
-  transform.a.u = -v_right.u;
-  transform.a.v = v_front.u;
-  transform.b.u = v_right.v;
-  transform.b.v = -v_front.v;
-  transform.c.u = v_right.u * v_gps.u - v_right.v * v_gps.v;
-  transform.c.v = -v_front.u * v_gps.u + v_front.v * v_gps.v;
-  Vector3 v_target_tmp = {goto_data.v_target.u, goto_data.v_target.v, 1.0};
-  Vector3 v_target_rel;
-  matrix33_mult_vector3(&v_target_rel, &transform, &v_target_tmp);
-
-  // compute the speeds
-  double speeds[4] = {0.0, 0.0, 0.0, 0.0};
-  // -> first stimulus: delta_angle
-  speeds[0] = -delta_angle / M_PI * K1;
-  speeds[1] = delta_angle / M_PI * K1;
-  speeds[2] = -delta_angle / M_PI * K1;
-  speeds[3] = delta_angle / M_PI * K1;
-
-  // -> second stimulus: u coord of the relative target vector
-  speeds[0] += v_target_rel.u * K2;
-  speeds[1] += v_target_rel.u * K2;
-  speeds[2] += v_target_rel.u * K2;
-  speeds[3] += v_target_rel.u * K2;
-
-  // -> third stimulus: v coord of the relative target vector
-  speeds[0] += -v_target_rel.v * K3;
-  speeds[1] += v_target_rel.v * K3;
-  speeds[2] += v_target_rel.v * K3;
-  speeds[3] += -v_target_rel.v * K3;
-
-  // apply the speeds
-  int i;
-  for (i = 0; i < 4; i++) {
-    speeds[i] /= (K1 + K2 + K2);  // number of stimuli (-1 <= speeds <= 1)
-    speeds[i] *= SPEED;           // map to speed (-SPEED <= speeds <= SPEED)
-
-    // added an arbitrary factor increasing the convergence speed
-    speeds[i] *= 30.0;
-    speeds[i] = bound(speeds[i], -SPEED, SPEED);
-  }
-  base_set_wheel_speeds_helper(speeds);
-
-  // check if the taget is reached
-  if (distance < DISTANCE_TOLERANCE && delta_angle < ANGLE_TOLERANCE && delta_angle > -ANGLE_TOLERANCE)
-    goto_data.reached = true;
+// angle normalization helper (to remove possible errors)
+static double normalize_angle(double angle) {
+  return atan2(sin(angle), cos(angle));
 }
+
+// new run
+void base_goto_run() {
+  if (goto_data.reached)
+    return;
+
+  // If supervisor stuff is not available, we cannot run goto control
+  if (!self_node || !translation_field || !rotation_field) {
+    fprintf(stderr, "base_goto_run: supervisor fields not initialized, disabling goto\n");
+    goto_data.reached = true;
+    base_reset();
+    return;
+  }
+
+  // get current robot pose(replaces gps/compass)
+  const double *t = wb_supervisor_field_get_sf_vec3f(translation_field);
+  const double *r = wb_supervisor_field_get_sf_rotation(rotation_field);
+
+  const double x = t[0];
+  const double y = t[1];
+
+  double ax = r[0];
+  double ay = r[1];
+  double az = r[2];
+  double angle = r[3];
+
+  if (az < 0.0) {
+    az = -az;
+    angle = -angle;
+  }
+  double yaw = angle;
+
+  const double dx = goto_data.v_target.u - x;
+  const double dy = goto_data.v_target.v - y;
+  const double dist = sqrt(dx * dx + dy * dy);
+
+  double vx_r = 0.0;
+  double vy_r = 0.0;
+  double omega = 0.0;
+
+  if (dist > DISTANCE_TOLERANCE) {
+    double v_mag = dist;
+    if (v_mag > MAX_SPEED)
+      v_mag = MAX_SPEED;
+
+    double vx_w = (dx / dist) * v_mag;
+    double vy_w = (dy / dist) * v_mag;
+
+    double c = cos(yaw);
+    double s = sin(yaw);
+    vx_r =  c * vx_w + s * vy_w;
+    vy_r = -s * vx_w + c * vy_w;
+
+    omega = 0.0;
+
+    base_move(vx_r, vy_r, omega);
+    goto_data.reached = false;
+    return;
+  }
+
+  // Target orientation
+  double alpha = goto_data.alpha;
+  if (!isnan(alpha)) {
+    double angle_error = normalize_angle(alpha - yaw);
+
+    if (fabs(angle_error) > ANGLE_TOLERANCE) {
+      double k_omega = 1.0;
+      omega = k_omega * angle_error;
+
+      if (omega >  MAX_SPEED) omega =  MAX_SPEED;
+      if (omega < -MAX_SPEED) omega = -MAX_SPEED;
+
+      vx_r = 0.0;
+      vy_r = 0.0;
+
+      base_move(vx_r, vy_r, omega);
+      goto_data.reached = false;
+      return;
+    }
+  }
+
+  goto_data.reached = true;
+  // stop the robot when reached
+  base_move(0.0, 0.0, 0.0);
+}
+
 
 bool base_goto_reached() {
   return goto_data.reached;

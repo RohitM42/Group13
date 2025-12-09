@@ -1,60 +1,44 @@
-/*
- * Copyright 1996-2024 Cyberbotics Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- * Description:   Starts with a predefined behaviors and then
- *                read the user keyboard inputs to actuate the
- *                robot
- */
- 
-#include <webots/keyboard.h>
 #include <webots/robot.h>
 
 #include <arm.h>
 #include <base.h>
 #include <gripper.h>
+#include "obstacles.h"
+#include "navigation.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+// for when the camera sends messages
+// #include <webots/receiver.h>
+
+// Webots Web Interface receive function (available to controllers)
+const char *wb_robot_wwi_receive_text(void);
+
 #define TIME_STEP 32
+#define ROBOT_RADIUS 0.32
 
-static void step() {
-  if (wb_robot_step(TIME_STEP) == -1) {
-    wb_robot_cleanup();
-    exit(EXIT_SUCCESS);
+static void process_window_messages() {
+  const char *msg;
+  while ((msg = wb_robot_wwi_receive_text()) != NULL) {
+    printf("[WINDOW] Raw message: '%s'\n", msg);
+
+    double x, y, yaw;
+
+    if (sscanf(msg, "NAV_GOTO %lf %lf %lf", &x, &y, &yaw) == 3) {
+      printf("[WINDOW] Parsed NAV_GOTO: x=%.3f, y=%.3f, yaw=%.3f\n", x, y, yaw);
+      nav_start_to(x, y, yaw);
+    }
+    else if (sscanf(msg, "GOTO %lf %lf %lf", &x, &y, &yaw) == 3) {
+      printf("[WINDOW] Parsed GOTO (using planner): x=%.3f, y=%.3f, yaw=%.3f\n", x, y, yaw);
+      nav_start_to(x, y, yaw);
+    }
+    else {
+      printf("[WINDOW] Unknown message format\n");
+    }
   }
-}
-
-static void passive_wait(double sec) {
-  double start_time = wb_robot_get_time();
-  do {
-    step();
-  } while (start_time + sec > wb_robot_get_time());
-}
-
-static void display_helper_message() {
-  printf("\n \nControl commands:\n");
-  printf(" Arrows:         Move the robot\n");
-  printf(" Page Up/Down:   Rotate the robot\n");
-  printf(" +/-:            (Un)grip\n");
-  printf(" Shift + arrows: Handle the arm\n");
-  printf(" Space:          Reset\n");
 }
 
 int main(int argc, char **argv) {
@@ -63,84 +47,29 @@ int main(int argc, char **argv) {
   base_init();
   arm_init();
   gripper_init();
-  passive_wait(2.0);
+  base_goto_init();
+  nav_init();
 
-  display_helper_message();
+  obstacles_init();
 
-  int pc = 0;
-  wb_keyboard_enable(TIME_STEP);
+  // obstacles_register_rect_from_def("PALLET_1",  ROBOT_RADIUS);
+  // obstacles_register_rect_from_def("PALLET_2",  ROBOT_RADIUS);
+  obstacles_register_rect_from_def("CONVEYOR",  ROBOT_RADIUS);
+  obstacles_register_rects_by_type("RoCKInShelf", ROBOT_RADIUS);
+  obstacles_register_rects_by_type("WoodenPalletStack", ROBOT_RADIUS);
 
-  while (true) {
-    step();
-    gripper_step();
+  while (wb_robot_step(TIME_STEP) != -1) {
+    process_window_messages();
 
-    int c = wb_keyboard_get_key();
-    if ((c >= 0) && c != pc) {
-      switch (c) {
-        case WB_KEYBOARD_UP:
-          base_forwards_increment();
-          break;
-        case WB_KEYBOARD_DOWN:
-          base_backwards_increment();
-          break;
-        case WB_KEYBOARD_LEFT:
-          base_strafe_left_increment();
-          break;
-        case WB_KEYBOARD_RIGHT:
-          base_strafe_right_increment();
-          break;
-        case WB_KEYBOARD_PAGEUP:
-          base_turn_left_increment();
-          break;
-        case WB_KEYBOARD_PAGEDOWN:
-          base_turn_right_increment();
-          break;
-        case WB_KEYBOARD_END:
-        case ' ':
-          printf("Reset\n");
-          base_reset();
-          arm_reset();
-          break;
-        case '=':
-        case 388:
-        case 65585:
-          printf("Grip\n");
-          gripper_grip();
-          break;
-        case '-':
-        case 390:
-          printf("Ungrip\n");
-          gripper_release();
-          break;
-        case 332:
-        case WB_KEYBOARD_UP | WB_KEYBOARD_SHIFT:
-          printf("Increase arm height\n");
-          arm_increase_height();
-          break;
-        case 326:
-        case WB_KEYBOARD_DOWN | WB_KEYBOARD_SHIFT:
-          printf("Decrease arm height\n");
-          arm_decrease_height();
-          break;
-        case 330:
-        case WB_KEYBOARD_RIGHT | WB_KEYBOARD_SHIFT:
-          printf("Increase arm orientation\n");
-          arm_increase_orientation();
-          break;
-        case 328:
-        case WB_KEYBOARD_LEFT | WB_KEYBOARD_SHIFT:
-          printf("Decrease arm orientation\n");
-          arm_decrease_orientation();
-          break;
-        default:
-          fprintf(stderr, "Wrong keyboard input\n");
-          break;
-      }
-    }
-    pc = c;
+    if (!base_goto_reached())
+      base_goto_run();
+    else
+      base_reset();
+
+    nav_update();
   }
 
+  base_reset();
   wb_robot_cleanup();
-
   return 0;
 }
