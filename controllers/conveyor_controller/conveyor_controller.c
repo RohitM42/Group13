@@ -16,7 +16,7 @@ int main() {
   }
 
   wb_motor_set_position(belt, INFINITY);
-  wb_motor_set_velocity(belt, 0.2);  // m/s
+  wb_motor_set_velocity(belt, 0.3);  // m/s
 
   while (wb_robot_step(timestep) != -1) {
     // Conveyor belt running continuously
