@@ -5,6 +5,6 @@ sceneTreePerspectives: 000000ff000000010000000300000022000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
-textFiles: 8 "controllers/youbot/youbot.c" "libraries/youbot_control/src/gripper.c" "protos/Youbot.proto" "protos/ConveyorBelt.proto" "libraries/youbot_control/src/base.c" "libraries/youbot_control/include/base.h" "protos/RoCKInShelf.proto" "protos/WoodenPalletStack.proto" "controllers/camera_controller/camera_controller.c" "controllers/conveyor_controller/conveyor_controller.c"
+textFiles: 0 "controllers/youbot/youbot.c" "libraries/youbot_control/src/gripper.c" "protos/Youbot.proto" "protos/ConveyorBelt.proto" "libraries/youbot_control/src/base.c" "libraries/youbot_control/include/base.h" "protos/RoCKInShelf.proto" "protos/WoodenPalletStack.proto" "controllers/camera_controller/camera_controller.c" "controllers/conveyor_controller/conveyor_controller.c" "libraries/youbot_control/src/navigation.c"
 consoles: Console:All:All
 renderingDevicePerspectives: camera_robot:camera;1;0.128125;0;0

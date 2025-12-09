@@ -14,14 +14,13 @@
 #include "quirc/quirc.h"
 
 #define TIME_STEP 32
-#define COOLDOWN 10000 //10 seconds
-#define RESPAWN_TIME 2000 //50 seconds
-
+#define COOLDOWN 20000 //20 seconds
+#define RESPAWN_TIME 4000 //4 seconds
 
 // needs to be adjusted to the current environment
 #define SPAWN_X -2.9
-#define SPAWN_Y 0.0
-#define SPAWN_Z 0.3
+#define SPAWN_Y 7.96
+#define SPAWN_Z 0.35
 
 // for emitter to send messages to youbot controller
 static WbNodeRef youbot_node = NULL;

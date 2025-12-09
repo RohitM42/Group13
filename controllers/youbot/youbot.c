@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// for when the camera sends messages
-// #include <webots/receiver.h>
+#define TIME_STEP 32
+#define ROBOT_RADIUS 0.32
 
 // temporary 
 // Destination for category CHUTE_A
@@ -34,8 +34,6 @@
 // Webots Web Interface receive function (available to controllers)
 const char *wb_robot_wwi_receive_text(void);
 
-#define TIME_STEP 32
-#define ROBOT_RADIUS 0.32
 static char last_category[32] = "";
 
 static void process_window_messages() {
