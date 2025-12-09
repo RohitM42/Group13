@@ -52,9 +52,6 @@ typedef enum {
 static TaskState task_state = TASK_IDLE;
 static double wait_until = 0.0;  // simulation time to wait until
 
-// ------------------------------------------------------------
-// Robot window commands (manual NAV/arm test buttons)
-// ------------------------------------------------------------
 static void process_window_messages() {
   const char *msg;
   while ((msg = wb_robot_wwi_receive_text()) != NULL) {
@@ -111,9 +108,6 @@ static void process_window_messages() {
   }
 }
 
-// ------------------------------------------------------------
-// Handle new box category coming from camera via customData
-// ------------------------------------------------------------
 static void process_custom_data_message() {
   const char *data = wb_robot_get_custom_data();
   if (!data || !data[0])
@@ -147,17 +141,12 @@ static void process_custom_data_message() {
   }
 }
 
-// ------------------------------------------------------------
-// State machine for full pick–transport–drop cycle
-// ------------------------------------------------------------
 static void update_task_state(void) {
   double now = wb_robot_get_time();
-
   switch (task_state) {
     case TASK_IDLE:
       // nothing to do
       break;
-
     case TASK_GO_TO_CONVEYOR:
       // wait until navigation is finished
       if (!nav_is_active() && base_goto_reached()) {
@@ -166,17 +155,15 @@ static void update_task_state(void) {
         task_state = TASK_WAIT_BEFORE_PICK;
       }
       break;
-
     case TASK_WAIT_BEFORE_PICK:
       if (now >= wait_until) {
         printf("[TASK] Calling arm_pick() (this includes its own internal wait).\n");
         arm_pick();  // this already waits ARM_DELAY inside
         // after pick pose, wait 2s before going to hold pose
-        wait_until = wb_robot_get_time() + 2.0;
+        wait_until = wb_robot_get_time() + 2.7;
         task_state = TASK_WAIT_AFTER_PICK;
       }
       break;
-
     case TASK_WAIT_AFTER_PICK:
       if (now >= wait_until) {
         printf("[TASK] Calling arm_hold() (this includes its own internal wait).\n");
@@ -198,7 +185,6 @@ static void update_task_state(void) {
         task_state = TASK_GO_TO_CHUTE;
       }
       break;
-
     case TASK_GO_TO_CHUTE:
       if (!nav_is_active() && base_goto_reached()) {
         printf("[TASK] Arrived at chute. Dropping off box.\n");
@@ -208,26 +194,28 @@ static void update_task_state(void) {
         task_state = TASK_WAIT_AFTER_DROPOFF;
       }
       break;
-
     case TASK_WAIT_AFTER_DROPOFF:
       if (now >= wait_until) {
         printf("[TASK] Resetting arm.\n");
         arm_reset();
+
+        // Clear active and last category
         active_category[0] = '\0';
+        last_category[0]   = '\0';
+
+        // Signal to camera that this box has been delivered.
+        wb_robot_set_custom_data("DONE");
+
         task_state = TASK_IDLE;
         printf("[TASK] Cycle finished – waiting for next box.\n");
       }
       break;
-
     default:
       task_state = TASK_IDLE;
       break;
   }
 }
 
-// ------------------------------------------------------------
-// main
-// ------------------------------------------------------------
 int main(int argc, char **argv) {
   wb_robot_init();
 
