@@ -19,6 +19,7 @@
  */
 
 #include "arm.h"
+#include "gripper.h"
 
 #include <webots/motor.h>
 #include <webots/robot.h>
@@ -26,10 +27,23 @@
 #include <math.h>
 #include <stdio.h>
 
+// Change to make pickup/drop poses wait longer when gripping/ungripping first.
+#define ARM_DELAY 2.5
+
 static WbDeviceTag arm_elements[5];
 
 static enum Height current_height = ARM_RESET;
 static enum Orientation current_orientation = ARM_FRONT;
+
+static void arm_wait(double seconds) {
+  int time_step = (int)wb_robot_get_basic_time_step();
+  double start_time = wb_robot_get_time();
+
+  while (wb_robot_get_time() - start_time < seconds) {
+    if (wb_robot_step(time_step) == -1)
+      break;
+  }
+}
 
 enum Height new_height;
 enum Orientation new_orientation;
@@ -96,6 +110,19 @@ void arm_set_height(enum Height height) {
       wb_motor_set_position(arm_elements[ARM4], -M_PI_2);
       wb_motor_set_position(arm_elements[ARM5], M_PI_2);
       break;
+      
+    case ARM_PICKUP_PACKAGE:
+      wb_motor_set_position(arm_elements[ARM2], 0);
+      wb_motor_set_position(arm_elements[ARM3], -1.55);
+      wb_motor_set_position(arm_elements[ARM4], 0);
+      wb_motor_set_position(arm_elements[ARM5], 0);
+      break;
+    case ARM_PICKUP_HOLD:
+      wb_motor_set_position(arm_elements[ARM2], 0.33);
+      wb_motor_set_position(arm_elements[ARM3], 0.88);
+      wb_motor_set_position(arm_elements[ARM4], 1.00);
+      wb_motor_set_position(arm_elements[ARM5], 0);
+      break;
     default:
       fprintf(stderr, "arm_height() called with a wrong argument\n");
       return;
@@ -131,6 +158,26 @@ void arm_set_orientation(enum Orientation orientation) {
       return;
   }
   current_orientation = orientation;
+}
+
+// PACKAGE POSES
+void arm_pick() {
+  gripper_release();
+  arm_wait(ARM_DELAY);
+  new_height = ARM_PICKUP_PACKAGE;
+  arm_set_height(new_height);
+}
+void arm_hold() {
+  gripper_grip();
+  arm_wait(ARM_DELAY);
+  new_height = ARM_PICKUP_HOLD;
+  arm_set_height(new_height);
+}
+void arm_dropoff() {
+  new_height = ARM_PICKUP_PACKAGE;
+  arm_set_height(new_height);
+  arm_wait(ARM_DELAY);
+  gripper_release();
 }
 
 void arm_increase_height() {

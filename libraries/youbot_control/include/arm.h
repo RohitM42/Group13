@@ -37,9 +37,14 @@ enum Height {
   ARM_HANOI_PREPARE,
   ARM_FRONT_PLATE,
   ARM_FRONT_FLOOR,
+  ARM_PICKUP_PACKAGE,
+  ARM_PICKUP_HOLD,
   ARM_MAX_HEIGHT
 };
 void arm_set_height(enum Height height);
+void arm_pick();
+void arm_hold();
+void arm_dropoff();
 void arm_increase_height();
 void arm_decrease_height();
 
