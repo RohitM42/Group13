@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Youbot 1.4</title>
+  <title>Youbot 1.5</title>
   <style>
     body {
       font-family: sans-serif;
@@ -35,8 +35,9 @@
   </style>
 </head>
 <body>
-  <h2>Youbot 1.4</h2>
+  <h2>Youbot 1.5</h2>
 
+  <!-- Navigation block (same as before) -->
   <fieldset>
     <legend>Avoid obstacles</legend>
     <div class="row">
@@ -57,6 +58,28 @@
     <button id="go">Plan &amp; Go</button>
   </fieldset>
 
+  <!-- New: arm test controls -->
+  <fieldset>
+    <legend>Arm tests</legend>
+
+    <div class="row">
+      <button id="armReset">Arm reset</button>
+      <button id="armPick">Pick pose</button>
+      <button id="armHold">Hold pose</button>
+      <button id="armDrop">Dropoff pose</button>
+    </div>
+
+    <div class="row">
+      <button id="armHeightUp">Height +</button>
+      <button id="armHeightDown">Height -</button>
+    </div>
+
+    <div class="row">
+      <button id="armOrientLeft">Orientation -</button>
+      <button id="armOrientRight">Orientation +</button>
+    </div>
+  </fieldset>
+
   <div id="status">JS loading…</div>
 
   <script type="module">
@@ -64,13 +87,24 @@
 
     const robotWindow = new RobotWindow();
     window.robotWindow = robotWindow;
-    robotWindow.setTitle('Youbot 1.4');
+    robotWindow.setTitle('Youbot 1.5');
 
     const xInput    = document.getElementById('x');
     const yInput    = document.getElementById('y');
     const yawInput  = document.getElementById('yaw');
     const goBtn     = document.getElementById('go');
+
     const statusEl  = document.getElementById('status');
+
+    // Arm buttons
+    const armResetBtn      = document.getElementById('armReset');
+    const armPickBtn       = document.getElementById('armPick');
+    const armHoldBtn       = document.getElementById('armHold');
+    const armDropBtn       = document.getElementById('armDrop');
+    const armHeightUpBtn   = document.getElementById('armHeightUp');
+    const armHeightDownBtn = document.getElementById('armHeightDown');
+    const armOrientLeftBtn = document.getElementById('armOrientLeft');
+    const armOrientRightBtn= document.getElementById('armOrientRight');
 
     function setStatus(text) {
       statusEl.textContent = text;
@@ -83,6 +117,7 @@
       setStatus(msg + '\n' + 'time=' + new Date().toLocaleTimeString());
     }
 
+    // Navigation button
     goBtn.addEventListener('click', () => {
       const x      = parseFloat(xInput.value);
       const y      = parseFloat(yInput.value);
@@ -98,6 +133,40 @@
       sendMessage(msg);
     });
 
+    // Arm commands
+    armResetBtn.addEventListener('click', () => {
+      sendMessage('ARM_RESET');
+    });
+
+    armPickBtn.addEventListener('click', () => {
+      sendMessage('ARM_PICK');
+    });
+
+    armHoldBtn.addEventListener('click', () => {
+      sendMessage('ARM_HOLD');
+    });
+
+    armDropBtn.addEventListener('click', () => {
+      sendMessage('ARM_DROPOFF');
+    });
+
+    armHeightUpBtn.addEventListener('click', () => {
+      sendMessage('ARM_HEIGHT_UP');
+    });
+
+    armHeightDownBtn.addEventListener('click', () => {
+      sendMessage('ARM_HEIGHT_DOWN');
+    });
+
+    armOrientLeftBtn.addEventListener('click', () => {
+      sendMessage('ARM_ORIENT_DEC');
+    });
+
+    armOrientRightBtn.addEventListener('click', () => {
+      sendMessage('ARM_ORIENT_INC');
+    });
+
+    // Messages from controller (optional)
     robotWindow.receive = (message, robot) => {
       console.log('[WINDOW] From controller:', message, 'for robot:', robot);
       setStatus('From controller: ' + message + '\n' +
