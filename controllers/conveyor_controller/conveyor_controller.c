@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 
+//lightweight conveyor controller - just runs the belt continuously
 int main() {
   wb_robot_init();
 
