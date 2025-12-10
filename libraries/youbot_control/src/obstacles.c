@@ -59,8 +59,8 @@ static double read_yaw(WbNodeRef node) {
     return 0.0;
 
   const double *r = wb_supervisor_field_get_sf_rotation(r_field);
-  double ax = r[0];
-  double ay = r[1];
+  // double ax = r[0];
+  // double ay = r[1];
   double az = r[2];
   double angle = r[3];
 

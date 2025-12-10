@@ -32,8 +32,8 @@
 #define SPEED 4.0
 #define MAX_SPEED 0.5
 #define SPEED_INCREMENT 0.05
-#define DISTANCE_TOLERANCE 0.05
-#define ANGLE_TOLERANCE 0.05
+#define DISTANCE_TOLERANCE 0.02
+#define ANGLE_TOLERANCE 0.02
 
 // robot geometry
 #define WHEEL_RADIUS 0.05
@@ -213,8 +213,8 @@ void base_goto_run() {
   const double x = t[0];
   const double y = t[1];
 
-  double ax = r[0];
-  double ay = r[1];
+  // double ax = r[0];
+  // double ay = r[1];
   double az = r[2];
   double angle = r[3];
 

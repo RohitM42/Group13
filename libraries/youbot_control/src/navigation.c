@@ -11,7 +11,7 @@
 #include "base.h"
 #include "obstacles.h"
 
-#define NAV_MAX_NODES      128
+#define NAV_MAX_NODES      256
 #define NAV_MAX_PATH_LEN   128
 
 typedef struct {
