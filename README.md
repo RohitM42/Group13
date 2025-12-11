@@ -92,6 +92,6 @@ Project
 
 # Authors
 
-Ardrit Kucana
-Rohit Mamtora
+Ardrit Kucana,
+Rohit Mamtora,
 Ivan Korniichuk
