@@ -7,6 +7,7 @@ The robot detects packages on a conveyor, reads QR/ArUco markers, picks them up,
 Modified KUKA YouBot with omnidirectional drive and extended gripper
 
 * QR/ArUco marker decoding using the Quirc library
+* Customisable Box textures via textureUrl field
 * Supervisor-based odometry and pose estimation
 * Custom GOTO controller for smooth omnidirectional motion
 * Waypoint navigation with modular support for A* path planning

@@ -151,10 +151,6 @@ int main() {
               break;
             } else {
               printf("Camera: Unknown QR '%s'\n", data.payload);
-              // not capable of handling other codes
-              send_box_category((char *)data.payload);
-              state = CAM_WAIT_ROBOT;
-              break;
             }
           } else {
             printf("QR decode error: %s\n", quirc_strerror(err));
