@@ -40,6 +40,21 @@ make
 
 This is a Windows set up. To make it work on other OS you need to change makefiles
 
+# Pre-Programmed Packages / External Libraries Used
+
+We used the following external components:
+
+- **Quirc** — a lightweight third-party QR decoder.  
+- **Webots built-in APIs**, which provide the core simulation interfaces:
+  - Supervisor API (pose access, field manipulation, customData)
+  - Robot API (motors, sensors, communication)
+  - Camera API (image capture)
+  - Physics engine, kinematics, and PROTO definitions
+
+Although Webots provides basic controller examples for the KUKA YouBot, **all behaviour modules in this project were either rewritten, extended, or substantially modified** to support autonomous sorting.  
+
+This includes the youbot, arm control, base movement logic, navigation system, obstacle handling, and overall task workflow.
+
 # Project Structure
 
 ```
