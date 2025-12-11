@@ -16,7 +16,7 @@
 #define TIME_STEP     32
 #define COOLDOWN_MS   4000  // 4 seconds after robot finishes
 
-// needs to be adjusted to the current environment
+// box spawn position - start of conveyor
 #define SPAWN_X -2.9
 #define SPAWN_Y 7.96
 #define SPAWN_Z 0.42
@@ -25,8 +25,10 @@
 static WbNodeRef youbot_node = NULL;
 static WbFieldRef youbot_custom_field = NULL;
 
+// toggle infinite respawn
 bool infinite = true;
 
+// teleports a box at random to the start of the conveyor
 void respawn_box() {
   if (!infinite)
     return;
@@ -49,6 +51,7 @@ void respawn_box() {
   printf("respawned %s\n", box_name);
 }
 
+// informs the youbot controller of decoded qr
 static void send_box_category(const char *category) {
   if (!youbot_node || !youbot_custom_field)
     return;
@@ -106,6 +109,7 @@ int main() {
         if (!image)
           break;
 
+        // prepare quirc image
         int width = wb_camera_get_width(camera);
         int height = wb_camera_get_height(camera);
 
@@ -147,10 +151,6 @@ int main() {
               break;
             } else {
               printf("Camera: Unknown QR '%s'\n", data.payload);
-              // still send it if you want, or ignore
-              send_box_category((char *)data.payload);
-              state = CAM_WAIT_ROBOT;
-              break;
             }
           } else {
             printf("QR decode error: %s\n", quirc_strerror(err));
